@@ -1,4 +1,4 @@
-# climate-data-retrieval
+# Climate data retrieval
 
 Code for retrieving/reformatting climate data from ClimateNA, the Flint Basin Characterization model, and PRISM. Please let me know if you notice things that are out of date or incorrect. 
 
@@ -30,6 +30,5 @@ There are 3 options for California and all are pretty good.
      - Geographic resolution: 270 m (downscaled from PRISM and oother data sources)
      - Temporal coverage: 1895 - 2010, additional data available for 2011-2016 
      - Temporal resolution: monthly 
-
 
 

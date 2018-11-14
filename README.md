@@ -2,9 +2,20 @@
 
 Code for retrieving/reformatting climate data from ClimateNA, the Flint Basin Characterization model, and PRISM. Please let me know if you notice things that are out of date or incorrect. 
 
-The easiest way to get normals (averages) is using bioclim (global coverage), but if you want data from specific months/years, you'll need to use another source (you can always calculate long-term normals from these).
+These scripts will guide you through:
 
-There are 3 options for California and all are pretty good.
+1. Getting your location data into the input format required for each data source.
+
+2. Plugging your location data into data sources to get climate time series.
+
+3. Reformat these time series so that you can calculate a variety of climate values.
+
+Sample data are localities of *Caulanthus anceps* downloaded from the Consortium of California Herbaria.
+
+
+If you just want  normals (averages) using bioclim is the easiest option (and it has global coverage), but if you want data from specific months/years, you'll need to use another source (you can always calculate long-term normals from these).
+
+There are 3 options for California and all are pretty good. Make sure to read the terms of use for whichever you use and cite them appropriately in any research products.
 
 1. PRISM (http://prism.oregonstate.edu/explorer/bulk.php)
      - Other data sources often downscale this dataset

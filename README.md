@@ -10,8 +10,13 @@ These scripts will guide you through:
 
 3. Reformating these time series so that you can calculate a variety of climate variables.
 
-Sample data are localities of *Caulanthus anceps* downloaded from the Consortium of California Herbaria.
-
+Sample data are localities of *Caulanthus anceps* downloaded from the Consortium of California Herbaria. Your data should contain these columns:
+- id: a unique id for each row/location
+- latitude: in decimal degrees
+- longitude: in decimal degrees
+- elev_m: (optional) elevation in meters
+- year: (optional) an event year, such as year of collection of a specimen
+- month: (optional) an event month, such as month of collection as a specimen
 
 If you just want  normals (averages) using bioclim is the easiest option (and it has global coverage), but if you want data from specific months/years, you'll need to use another source (you can always calculate long-term normals from these).
 

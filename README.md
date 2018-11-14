@@ -32,8 +32,8 @@ There are 3 options for California and all are pretty good. Make sure to read th
      - Temporal resolution: monthly (daily also available, but in smaller batches)
      
 2. ClimateNA (https://sites.ualberta.ca/~ahamann/data/climatena.html)
-     - Pros: easy bulk download if you install the software, can include elevation (but not required)
-     - Cons: software must be installed on PC (or can be installed on a Mac with Wine, but I haven't tried this)
+     - Pros: easy bulk download if you install the software, can include elevation (but not required), future climate projections are also available
+     - Cons: software must be installed on PC (or can be installed on a Mac with Wine)
      - Geographic coverage: North America (other programs are available for other regions: ClimateEU, ClimateSA, ClimateAP)
      - Geographic resolution: downscaled to point estimate (from CRU dataset)
      - Temporal coverage: 1901 - 2015 (?) 

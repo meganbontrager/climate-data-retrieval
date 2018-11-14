@@ -8,7 +8,7 @@ These scripts will guide you through:
 
 2. Plugging your location data into data sources to get climate time series.
 
-3. Reformat these time series so that you can calculate a variety of climate values.
+3. Reformating these time series so that you can calculate a variety of climate variables.
 
 Sample data are localities of *Caulanthus anceps* downloaded from the Consortium of California Herbaria.
 

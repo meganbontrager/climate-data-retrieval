@@ -1,5 +1,5 @@
-# Gather climate data from PRISM
-# Created by Megan Bontrager, 13 Nov 2018
+# Gather climate data from ClimateNA
+# Created by Megan Bontrager, 14 Nov 2018
 
 
 
@@ -14,27 +14,24 @@ library(cowplot) # for plot aesthetics
 
 locs = read.csv("sample_locations.csv")
 
-# PRISM's data explorer requires an input csv (with no column headers) containing the columns latitude, longitude, and id (< 12 characters).
+# ClimateNA requires an input csv containing the columns ID1, ID2, lat, long, and (optionally) el.
+# ID1 and ID2 can be anything you want 
 
-locs_prism = locs %>% 
-  select(latitude, longitude, id)
+locs_climna = locs %>% 
+  mutate(ID2 = NA) %>% 
+  select(ID1 = id, ID2, lat = latitude, long = longitude, el = elev_m)
 
-colnames(locs_prism) = NULL
-
-write.csv(locs_prism, "PRISM/prism_input.csv", row.names = FALSE)
-
-# Or, if >500 locations
-# write.csv(locs_prism[1:500,], "PRISM/prism_input_1.csv", row.names = FALSE)
-# write.csv(locs_prism[501:1000,], "PRISM/prism_input_2.csv", row.names = FALSE)
-# Continue until all locations are in 500 row csvs.
+write.csv(locs_climna, "ClimateNA/climatena_input.csv", row.names = FALSE)
 
 
-# 2. Plug data into PRISM's data explorer ---------------------------------
 
-# Go to: http://prism.oregonstate.edu/explorer/bulk.php
+# 2. Plug data into ClimateNA ---------------------------------------------
 
-# Download monthly data for the time window(s) of interest. Save these files to the PRISM directory. 
-# Note that if you are working with > 500 locations, 
+# Open the ClimateNA program. Select "time series" in the dropdown menu under multiple locations. Select "monthly variables". Specify the input file we creaetd above, and specif
+
+# Generate monthly data for the time window of interest. Save these files to the ClimateNA directory. 
+
+
 
 
 # 3. Compile PRISM data from multiple files and reformat ------------------

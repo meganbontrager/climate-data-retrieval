@@ -40,7 +40,9 @@ ggplot(all_data, aes(year)) + geom_histogram(bins = 122)
 
 write.csv(all_data, "data_prism/prism_climate_tall.csv", row.names = FALSE)
 
-
+# specimen_number longitude latitude elev_m year month ppt_mm tmin tave tmax clim_date
+#        SD241782 -120.6667  36.5839    331 1951     1  31.26  1.9  7.7 13.5    195101
+#        SD241782 -120.6667  36.5839    331 1951     2  37.41  2.2  9.3 16.4    195102
 
 # 2. reformat climateNA data ----------------------------------------------
 

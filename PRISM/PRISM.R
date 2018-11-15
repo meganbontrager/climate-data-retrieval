@@ -49,13 +49,16 @@ all_data = lapply(str_c("PRISM/", each_data), read.csv, skip = 10) %>%
   # Bind all the dataframes together
   bind_rows() %>% 
   # Separate the date column into month and year
-  separate(Date, into = c("year", "month"), sep = "-") %>% 
+  separate(Date, into = c("clim_year", "clim_month"), sep = "-") %>% 
   # Make these into "padded" columns with 0s in from of single digit months for merging
-  mutate(year = as.numeric(year), month = as.numeric(month), month_pad = str_pad(month, 2, pad = "0"), clim_date = as.numeric(paste0(year, month_pad))) %>% 
+  mutate(clim_year = as.numeric(clim_year), 
+         clim_month = as.numeric(clim_month), 
+         month_pad = str_pad(clim_month, 2, pad = "0"), 
+         clim_date = as.numeric(paste0(clim_year, month_pad))) %>% 
   # Drop unnecessary columns
   select(-month_pad) %>%
   # Rename columns
-  rename(specimen_number = Name, longitude = Longitude, latitude = Latitude, elev_m = Elevation..m., ppt_mm = ppt..mm., tmin = tmin..degrees.C., tave = tmean..degrees.C., tmax = tmax..degrees.C.)
+  rename(specimen_number = Name, longitude = Longitude, latitude = Latitude, elev_prism_m = Elevation..m., ppt_mm = ppt..mm., tmin = tmin..degrees.C., tave = tmean..degrees.C., tmax = tmax..degrees.C.)
 # Elevation data here was inferred by prism based on the lat/longs
 
 # Make sure new names look good
@@ -63,10 +66,10 @@ head(all_data)
 summary(all_data)
 
 # Do we have a complete time series? Adjust bins to number of years in your dataset. Each bin should have 12 months * the number of sites in your dataset.  Once you have all data this should make a nice even histogram.
-ggplot(data = all_data, aes(x = year)) + 
+ggplot(data = all_data, aes(x = clim_year)) + 
   geom_histogram(bins = 60)
 # Another check:
-table(all_data$year)
+table(all_data$clim_year)
 
 # Now save this data
 write.csv(all_data, "PRISM/prism_climate_tall.csv", row.names = FALSE)

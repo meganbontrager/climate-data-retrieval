@@ -1,72 +1,131 @@
-# libraries ---------------------------------------------------------------
+# Extract climate data from FlintBCM
+# Created by Megan Bontrager, 14 Nov 2018
+# Modified from code by Alec Chiono
+
+# This script assumes you have downloaded the Flint .nc files from https://cida.usgs.gov/thredds/CA-BCM-Catalog.html
+# These are large files (2-12 gb)
+
+
+
+# Libraries ---------------------------------------------------------------
 
 library(tidyverse)
-library(sp)
-library(ncdf4) # for reading climate files (.nc)
-library(mosaic) # for derived factor
-library(cowplot) # for making multi-panel plots
+library(cowplot) # for plot aesthetics
 
 
-# 3. extract flint data ---------------------------------------------------
 
-# read in data
-allA = read_csv(file = "lahari_data/Latitude and Longitude data Lahari_sheet2.csv") %>% 
-  # keep just the necessary columns
-  dplyr::select(specimen_number = CollectionNumber, elev_m = `Elevation in m`, latitude = LatitudeDecimal, longitude = LongitudeDecimal)
+# Prepare locality data ---------------------------------------------------
 
-allB = read_csv(file = "lahari_data/Latitude and Longitude data Lahari_sheet3.csv") %>% 
-  # separate elevation number from units
-  separate(elevation, into = c("elev_m", "units"), sep = " ") %>% 
-  # keep just the necessary columns
-  dplyr::select(specimen_number, elev_m, latitude, longitude)
-allB$elev_m = as.numeric(allB$elev_m)
+# Read in data and select necessary columns
+locs = read.csv("sample_locations.csv") %>% 
+  select(id, latitude, longitude) %>% 
+  distinct() %>% # Remove duplicates
+  mutate(latitude_aea = latitude, longitude_aea = longitude) # Make duplicate lat/long columns that will be transformed to math the Flint equal area projection
 
-all = bind_rows(allA, allB) %>% 
-  # keep only unique combinations
-  unique()
-
-# define projection of flint data
+# Define projection of flint data
 flint_prj = '+proj=aea +lat_1=34 +lat_2=40.5 +lat_0=0 +lon_0=-120 +x_0=0 +y_0=-4000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs' 
 
-# are any rows missing location data? if so, remove
-all1 = filter(all, !is.na(latitude), !is.na(longitude))
-# make duplicate lat/long columns that will remain in decimal degrees
-all1$latitude_dd = all1$latitude
-all1$longitude_dd = all1$longitude
-# designate latitude and longitude columns as coordinates
-coordinates(all1) = ~longitude + latitude
-# define originaal projection (unprojected)
-proj4string(all1) = CRS("+proj=longlat +ellps=WGS84")
-# transform locations from original projection to be consistent with the flint data
-all_t = spTransform(all1, CRS(flint_prj)); plot(all_t)
-# make data frame from spatial points object, omit "optional" column
-all_p = data.frame(all_t) %>% dplyr::select(-optional)
+# Designate latitude and longitude columns as coordinates
+coordinates(locs) = ~longitude_aea + latitude_aea
 
+# Define original projection (which is unprojected)
+proj4string(locs) = CRS("+proj=longlat +ellps=WGS84")
 
-# climatic water deficit 
+# Transform locations from original projection to be consistent with the flint data, view this
+locs_t = spTransform(locs, CRS(flint_prj)); plot(locs_t)
 
-# read in climate file
-# these files are really big, can be downloaded from here: https://cida.usgs.gov/thredds/CA-BCM-Catalog.html
+# Make data frame from spatial points object, omit "optional" column
+# This data frame has the original coordinates but also transformed coordinates
+locs_p = data.frame(locs_t) %>% dplyr::select(-optional)
 
-cwd = nc_open("../../dimensions-fitness-climate/flint_data/HST_Monthly_cwd.nc")
+# We need to read in one climate file to set indices for locations
+cwd = nc_open("../../flint-data/HST_Monthly_cwd.nc")
 
-# need to pull the indices of the nearest cell to each locality
-# this should be just the same as above but running it again in case there's any difference in climate layers
-for (i in 1:nrow(all_p)) {
-  all_p$long_start[i] = which.min(abs(all_p$longitude[i] - cwd$dim$x$vals))
-  all_p$lat_start[i] = which.min(abs(all_p$latitude[i] - cwd$dim$y$vals))
+# Now we need to pull the indices of the nearest cell to each locality
+# This pulls the x and y coordinates in the .nc file that are nearest to each location in our dataset
+for (i in 1:nrow(locs_p)) {
+  locs_p$long_start[i] = which.min(abs(locs_p$longitude_aea[i] - cwd$dim$x$vals))
+  locs_p$lat_start[i] = which.min(abs(locs_p$latitude_aea[i] - cwd$dim$y$vals))
 }
 
-# did all rows get values?
-summary(all_p$long_start); summary(all_p$lat_start)
-# do they look similar to the map?
-plot(all_p$long_start, all_p$lat_start)
+# Check that all rows got values
+summary(locs_p$long_start); summary(locs_p$lat_start)
 
-# pull out the time variable; dates are formatted as number of days since 1895-10-01
-t.nc = ncvar_get(cwd, "time") 
-bcm.time.start = as.Date('1895-10-01')
-# make time vector in a format that is consistent with specimen collection dates
-t = t.nc + bcm.time.start
+# Do they look similar to the map?
+plot(locs_p$long_start, locs_p$lat_start) 
+plot(locs_t)
+
+# Make a time vector from the climate data file; dates are formatted as number of days since 1895-10-01
+t = ncvar_get(cwd, "time") + as.Date('1895-10-01')
+
+
+
+# Extract climate data ----------------------------------------------------
+
+file_list = list.files(path = "../../flint-data/")
+
+for (i in 1:length(file_list)){
+  
+}
+
+
+
+
+
+
+### MULTIPLE FILES AT A TIME
+setwd('E:/BCM Monthly')
+dat_list <- list(NA) #create blank list to store data in
+list_num <- 1 #dummy variable to keep track of position in list
+all_nc_files <- c(grep('tmx',list.files(),value=T),grep('tmn',list.files(),value=T),grep('ppt',list.files(),value=T),grep('cwd',list.files(),value=T)) #list temp, precip, and cwd .nc files in directory
+bcm_time_start <- as.Date('1895-10-01') # set start date for data
+mv.bcm$collection_date_bcm <- as.Date(paste(format(mv.bcm$collection_date,'%Y'),format(mv.bcm$collection_date,'%m'),'01',sep='-'))
+
+mv.bcm$gr_yr_start <- as.Date(paste(format(mv.bcm$collection_date,'%Y'),'09-01',sep='-'))
+mv.bcm$gr_yr_start[as.numeric(format(mv.bcm$collection_date,'%m'))<=9] <-as.Date(paste(as.numeric(format(mv.bcm$collection_date[as.numeric(format(mv.bcm$collection_date,'%m'))<=9],'%Y'))-1,'09-01',sep='-')) 
+
+for(j in all_nc_files){ #for each .nc file
+  
+  ncin <- nc_open(j) # open .nc file
+  t_nc <- ncvar_get(ncin,'time') # retrieve vector of time
+  date_nc <- t_nc+bcm_time_start # adjust time to appropriate Date format
+  tcount <- length(date_nc) # retrieve count dates to supply in ncvar_get()
+  full_var_name <- names(ncin$var) # retrieve name of climate data (eg "HST_Monthly_cwd"); must use to retrieve data from .nc file
+  clim_var <- substr(full_var_name,nchar(full_var_name)-2,nchar(full_var_name)) #shorten variable name to 3 letter code (eg 'cwd'); use to store in dataframe
+  
+  
+  for(i in 1:nrow(mv.bcm)){ # for each population
+    
+    # find grid that population is located in by finding nearest lon and lat
+    lonstart <- which.min(abs(mv.bcm$longitude[i]-ncin$dim$x$vals))
+    latstart <- which.min(abs(mv.bcm$latitude[i]-ncin$dim$y$vals))
+    
+    # find time span from sept 1 of that plant's growing season until collection date
+    
+    tstart <- which(date_nc==mv.bcm$gr_yr_start[i])
+    tend <- which(date_nc==mv.bcm$collection_date_bcm[i])
+    tcount <- tend+1-tstart
+    date_start_end <- date_nc[tstart:tend]
+    
+    # retrieve value for climate data across time for grid in which population exists
+    value <- ncvar_get(ncin,full_var_name,start=c(lonstart, latstart,1),count=c(1,1,tcount)) 
+    
+    
+    tmp_data <- data.frame(mv.bcm[i,],clim_var,date=date_start_end,value) # compile population info, which variable, date, and value into one data.frame
+    dat_list[[list_num]] <- tmp_data #put dataframe into dat list
+    list_num <- list_num+1 #adjust dummy variable for new location in list
+  }
+  nc_close(ncin) #close nc file
+  
+} # may get 50+ warnings that says 'row names were found from a short variable and have been discarded'; do not worry about it
+
+bcm_data <- do.call(rbind.data.frame,dat_list) #compile list into one dataframe
+
+bcm_data_final <- bcm_data[,c('specimen_number','taxon_name','collection_date','clim_var','date','value')]
+
+colnames(bcm_data_final)[colnames(bcm_data_final)=='date'] <- 'clim_date'
+
+
 
 # extract climate data time series for each locality
 # start indicates the cell to begin in. 
@@ -116,9 +175,6 @@ cwd_tall = gather(cwd_df, key = "date", value = "cwd", -specimen_number, -latitu
   dplyr::select(-date)
 summary(cwd_tall)
 
-# how many CWDs are NA?
-sum(is.na(cwd_tall$cwd))/dim(cwd_tall)[1]
-
 cwd_norm = cwd_tall %>% 
   filter(climate_year >=1960, climate_year < 1990) %>% 
   group_by(specimen_number, climate_year) %>% 
@@ -128,10 +184,10 @@ cwd_norm = cwd_tall %>%
 
 
 # write out in wide format
-# write.csv(cwd_df, "flint_extract/cwd_wide.csv", row.names = FALSE)
+write.csv(cwd_df, "flint_extract/cwd_wide.csv", row.names = FALSE)
 
 # write out in tall format
-# write.csv(cwd_tall, "lahflint_extract/cwd_tall.csv", row.names = FALSE)
+write.csv(cwd_tall, "flint_extract/cwd_tall.csv", row.names = FALSE)
 
 
 
@@ -139,7 +195,7 @@ cwd_norm = cwd_tall %>%
 
 # these sections modified from Alec's code in Gremer lab box
 # read in climate file
-pck = nc_open("../../dimensions-fitness-climate/flint_data/HST_Monthly_pck.nc")
+pck = nc_open("flint_data/HST_Monthly_pck.nc")
 
 # need to pull the indices of the nearest cell to each locality
 for (i in 1:nrow(all_p)) {
@@ -193,12 +249,30 @@ for (i in 1:num_locs) {
 }
 
 # make vectors of useful variables to merge on
-pck_df = cbind(info, as.data.frame(pck_mat))
+specimen_number = all_p$specimen_number; length(specimen_number)
+collection_year = all_p$year; length(collection_year)
+collection_month = all_p$month; length(collection_month)
+lat = all_p$latitude; length(lat)
+long = all_p$longitude; length(long)
+lat_dd = all_p$latitude_dd; length(lat_dd)
+long_dd = all_p$longitude_dd; length(long_dd)
+elevation_m = all_p$elevation_m; length(elevation_m)
+
+pck_df = cbind(specimen_number, collection_year, collection_month, lat, long, lat_dd, long_dd, elevation_m, as.data.frame(pck_mat))
 pck_df[1:20, 1:40]
+
+# are these locations outside the geographic coverage of the dataset?
+# column is arbitrary
+(which(is.na(pck_df$X1991.01.01), TRUE))
+
+ggplot(pck_df, aes(x = long, y = lat, color = is.na(X1896.01.01))) +
+  geom_point()
+# nope, they're in areas that should be covered
+# need to revisit this, are other variables also na for these locations?
 
 # reshape to tall format (this allows for easy filtering to year of collection etc.)
 # if you get a warning message about NAs, make sure you're omitting all covariates merged on in the cbind() step above
-pck_tall = gather(pck_df, key = "date", value = "pck", -specimen_number, -latitude, -longitude, -latitude_dd, -longitude_dd) %>% 
+pck_tall = gather(pck_df, key = "date", value = "pck", -specimen_number, -collection_year, -collection_month, -lat, -long, -lat_dd, -long_dd, -elevation_m) %>% 
   mutate(climate_year = as.numeric(substr(date, 2, 5)),
          climate_month = as.numeric(substr(date, 7, 8))) %>% 
   dplyr::select(-date)
@@ -206,11 +280,7 @@ summary(pck_tall)
 
 # why are there negative snowpack values?
 # which specimens have negative means?
-pck_tall %>% filter(pck < 0) %>% group_by(specimen_number, latitude_dd, longitude_dd) %>% summarize(n = n(), mean_pck = mean(pck)) %>% unique() %>% print(n = Inf)
-
-pck_tall$pck = abs(pck_tall$pck)
-
-merge1 = left_join(cwd_tall, pck_tall)
+pck_tall %>% filter(pck < 0) %>% group_by(specimen_number, lat_dd, long_dd) %>% summarize(n = n(), mean_pck = mean(pck)) %>% unique() %>% print(n = Inf)
 
 # make a dataframe of normals
 pck_means = pck_tall %>% 
@@ -249,7 +319,7 @@ write.csv(pck_tall, "specimen_climate/pck_tall.csv", row.names = FALSE)
 # maximum temperature ----------------------------------------
 
 # read in climate file
-tmx = nc_open("../../dimensions-fitness-climate/flint_data/HST_Monthly_tmx.nc")
+tmx = nc_open("flint_data/HST_Monthly_tmx.nc")
 
 # need to pull the indices of the nearest cell to each locality
 # this should be just the same as above but running it again in case there's any difference in climate layers
@@ -332,7 +402,7 @@ write.csv(tmx_df, "specimen_climate/tmx_tall.csv", row.names = FALSE)
 # minimum temperature ----------------------------------------
 
 # read in climate file
-tmn = nc_open("../../dimensions-fitness-climate/flint_data/HST_Monthly_tmn.nc")
+tmn = nc_open("flint_data/HST_Monthly_tmn.nc")
 
 # need to pull the indices of the nearest cell to each locality
 # this should be just the same as above but running it again in case there's any difference in climate layers
@@ -415,7 +485,7 @@ write.csv(tmn_df, "specimen_climate/tmn_tall.csv", row.names = FALSE)
 # precipitation ----------------------------------------
 
 # read in climate file
-ppt = nc_open("../../dimensions-fitness-climate/flint_data/HST_Monthly_ppt.nc")
+ppt = nc_open("flint_data/HST_Monthly_ppt.nc")
 
 # need to pull the indices of the nearest cell to each locality
 # this should be just the same as above but running it again in case there's any difference in climate layers
@@ -498,7 +568,7 @@ write.csv(ppt_df, "specimen_climate/ppt_tall.csv", row.names = FALSE)
 # potential evapotranspiration ----------------------------------------
 
 # read in climate file
-pet = nc_open("../../dimensions-fitness-climate/flint_data/HST_Monthly_pet.nc")
+pet = nc_open("flint_data/HST_Monthly_pet.nc")
 
 # need to pull the indices of the nearest cell to each locality
 # this should be just the same as above but running it again in case there's any difference in climate layers
@@ -581,7 +651,7 @@ write.csv(pet_df, "specimen_climate/pet_tall.csv", row.names = FALSE)
 # actual evapotranspiration ----------------------------------------
 
 # read in climate file
-aet = nc_open("../../dimensions-fitness-climate/flint_data/HST_Monthly_aet.nc")
+aet = nc_open("flint_data/HST_Monthly_aet.nc")
 
 # need to pull the indices of the nearest cell to each locality
 # this should be just the same as above but running it again in case there's any difference in climate layers
@@ -664,7 +734,7 @@ write.csv(aet_df, "specimen_climate/aet_tall.csv", row.names = FALSE)
 # snowfall ----------------------------------------
 
 # read in climate file
-snw = nc_open("../../dimensions-fitness-climate/flint_data/HST_Monthly_snw.nc")
+snw = nc_open("flint_data/HST_Monthly_snw.nc")
 
 # need to pull the indices of the nearest cell to each locality
 # this should be just the same as above but running it again in case there's any difference in climate layers

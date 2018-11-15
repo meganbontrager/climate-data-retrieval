@@ -1,4 +1,4 @@
-"specimen_number","longitude","latitude","elev_m","year","month","ppt_mm","tmin","tave","tmax","clim_date"
+"specimen_number","longitude","latitude","elev_prism_m","clim_year","clim_month","ppt_mm","tmin","tave","tmax","clim_date"
 "SD241782",-120.6667,36.5839,331,1951,1,31.26,1.9,7.7,13.5,195101
 "SD241782",-120.6667,36.5839,331,1951,2,37.41,2.2,9.3,16.4,195102
 "SD241782",-120.6667,36.5839,331,1951,3,10.66,3,11.5,20,195103

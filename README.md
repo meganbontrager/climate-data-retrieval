@@ -1,5 +1,7 @@
 # Climate data retrieval
 
+(Note this is a work in progress at this point)
+
 Code for retrieving/reformatting climate data from ClimateNA, the Flint Basin Characterization model, and PRISM. Please let me know if you notice things that are out of date or incorrect. 
 
 These scripts will guide you through:

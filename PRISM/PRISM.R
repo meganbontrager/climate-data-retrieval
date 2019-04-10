@@ -58,7 +58,7 @@ all_data = lapply(str_c("PRISM/", each_data), read.csv, skip = 10) %>%
   # Drop unnecessary columns
   select(-month_pad) %>%
   # Rename columns
-  rename(specimen_number = Name, longitude = Longitude, latitude = Latitude, elev_prism_m = Elevation..m., ppt_mm = ppt..mm., tmin = tmin..degrees.C., tave = tmean..degrees.C., tmax = tmax..degrees.C.)
+  rename(ID = Name, longitude = Longitude, latitude = Latitude, elev_prism_m = Elevation..m., ppt_mm = ppt..mm., tmin = tmin..degrees.C., tave = tmean..degrees.C., tmax = tmax..degrees.C.)
 # Elevation data here was inferred by prism based on the lat/longs
 
 # Make sure new names look good

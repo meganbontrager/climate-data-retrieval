@@ -1,7 +1,5 @@
 # Climate data retrieval
 
-(Note this is a work in progress at this point)
-
 Code for retrieving/reformatting climate data from ClimateNA, the Flint Basin Characterization model, and PRISM. Please let me know if you notice things that are out of date or incorrect. 
 
 These scripts will guide you through:
@@ -43,10 +41,12 @@ There are 3 options for California and all are pretty good. Make sure to read th
 
 3. Flint BCM (https://ca.water.usgs.gov/projects/reg_hydro/basin-characterization-model.html, download from https://cida.usgs.gov/thredds/CA-BCM-Catalog.html)
      - Pros: specifically downscaled to California's topography
-     - Cons: hardest dataset to work with, raw files are big, data extraction methods are new to me and probably most ecologists, I still haven't diagnosed why data doesn't extract for some locations
+     - Cons: hardest dataset to work with, raw files are big, data extraction methods are new to me, I still haven't diagnosed why data doesn't extract for some locations
      - Geographic coverage: California (drainage boundaries)
      - Geographic resolution: 270 m (downscaled from PRISM and oother data sources)
      - Temporal coverage: 1895 - 2010, additional data available for 2011-2016 
      - Temporal resolution: monthly 
+
+
 
 
